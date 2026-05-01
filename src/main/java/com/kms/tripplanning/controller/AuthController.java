@@ -37,4 +37,11 @@ public class AuthController {
         return userService.getCurrentUser();
     }
 
+    @PostMapping("/verify-email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void verifyEmail(@RequestBody RequestUser.VerifyEmail request) {
+        userService.verifyEmail(request);
+    }
+    
+
 }

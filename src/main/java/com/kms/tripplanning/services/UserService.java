@@ -13,7 +13,7 @@ public interface UserService extends UserDetailsService {
 
     ResponseUser.Me getCurrentUser();
 
-    void verifyEmail(String token, String email);
+    void verifyEmail(RequestUser.VerifyEmail request);
 
     
 }

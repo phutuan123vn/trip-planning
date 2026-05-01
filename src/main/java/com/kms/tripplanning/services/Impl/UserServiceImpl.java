@@ -64,7 +64,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         eventPublisher.publishEvent(new UserCreatedEvent(user.getId(), user.getEmail(),
                 jwtService.generateVerifyToken(new AuthUserDetails(user))));
-
     }
 
     @Override
@@ -84,18 +83,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void verifyEmail(String token, String email) {
+    public void verifyEmail(RequestUser.VerifyEmail request) {
         try {
-            if (!jwtService.isTokenValid(token)) {
+            if (!jwtService.isTokenValid(request.getToken())) {
                 throw new ValidationException("Invalid or expired token");
             }
         } catch (Exception e) {
             throw new ValidationException("Invalid token: " + e.getMessage());
         }
 
-        AuthUserDetails credential = jwtService.getCredentialFromToken(token);
+        try {
+            boolean hasClaimVerifyEmail = jwtService.getClaimFromToken(request.getToken(),
+                    (claims) -> claims.get("isVerifyEmail", Boolean.class));
 
-        if (!credential.getUsername().equals(email)) {
+            if (!hasClaimVerifyEmail)
+                throw new ValidationException("Token does not contain required claim: isVerifyEmail");
+
+        } catch (Exception e) {
+            throw new ValidationException("Token does not contain required claims: " + e.getMessage());
+        }
+
+        AuthUserDetails credential = jwtService.getCredentialFromToken(request.getToken());
+
+        if (!credential.getUsername().equals(request.getEmail())) {
             throw new ValidationException("Token does not match the provided email");
         }
 

@@ -34,13 +34,16 @@ spring:
     serialization:
       indent_output: true
 
-
   jwt:
     secret-key: ${JWT_SECRET_KEY}
     expiration: 3600000 # 1 hour in milliseconds
 
   brevo:
     smtp-api-key: ${BREVO_SMTP_API_KEY}
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
 
 server:
   port: 8000
