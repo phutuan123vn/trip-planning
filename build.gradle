@@ -1,9 +1,23 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://download.red-gate.com/maven/release"
+        }
+    }
+    dependencies {
+        classpath "io.github.cdimascio:dotenv-java:3.2.0"
+        classpath "org.flywaydb:flyway-database-postgresql:12.5.0"
+    }
+}
+
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.6'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.flywaydb.flyway' version '12.5.0'
     id "co.uzzu.dotenv.gradle" version "3.0.0"
+    id "org.flywaydb.flyway" version "12.5.0"
 }
 
 group = 'com.kms'
@@ -46,7 +60,7 @@ dependencies {
     // Dotenv
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
 
-	// Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
+    // Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
     // Source: https://mvnrepository.com/artifact/com.querydsl/querydsl-jpa
@@ -61,16 +75,34 @@ dependencies {
 
     // Source: https://mvnrepository.com/artifact/org.flywaydb/flyway-core
     implementation("org.flywaydb:flyway-core:12.5.0")
-	
+
     // H2 Database for testing
     testImplementation 'com.h2database:h2'
+
 }
+import io.github.cdimascio.dotenv.Dotenv
+
+def dotenv = Dotenv
+        .configure()
+        .directory(rootProject.projectDir.absolutePath)
+        .ignoreIfMissing()
+        .load()
+
+def DB_HOST = dotenv.get("DB_HOST")
+def DB_PORT = dotenv.get("DB_PORT")
+def DB_NAME = dotenv.get("DB_NAME")
+def DB_USER = dotenv.get("DB_USERNAME")
+def DB_PASS = dotenv.get("DB_PASSWORD")
 
 flyway {
-    url = "jdbc:postgresql://${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}"
-    user = env.DB_USERNAME
-    password = env.DB_PASSWORD
+    url = "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    user = DB_USER
+    password = DB_PASS
+    locations = ['classpath:db/migration']
+    cleanDisabled = false   // enable clean
 }
+
+flywayMigrate.dependsOn classes
 
 tasks.named('test') {
     useJUnitPlatform()
