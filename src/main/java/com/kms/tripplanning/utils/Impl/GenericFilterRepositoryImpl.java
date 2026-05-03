@@ -16,19 +16,18 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
     private final JPAQueryFactory queryFactory;
     private final Class<T> entityClass;
 
-
     public GenericFilterRepositoryImpl(EntityManager em, Class<T> entityClass) {
         this.entityClass = entityClass;
         this.queryFactory = new JPAQueryFactory(em);
     }
 
     @Override
-    public Page<T> search(Map<String, List<Object>> filters, Pageable pageable) {
+    public Page<T> search(Map<String, List<Object>> filters, List<String> loadRelations, Pageable pageable) {
 
         String alias = entityClass.getSimpleName().toLowerCase();
 
         PathBuilder<T> root = new PathBuilder<>(entityClass, alias);
-        JPAQuery<T> query = queryFactory.selectFrom(root);
+        JPAQuery<UUID> query = queryFactory.select(root.get("id", UUID.class)).from(root);
 
         Map<String, PathBuilder<?>> joins = new HashMap<>();
         BooleanBuilder builder = new BooleanBuilder();
@@ -59,13 +58,24 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
 
         query.where(builder).distinct();
 
-        // 🔹 pagination
-        List<T> content = query
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+        List<UUID> ids = query
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        var contentQuery = queryFactory.selectFrom(root);
+        
+
+        // Apply joins if specified
+        applyJoins(contentQuery, root, joins, loadRelations);
+
+        // pagination
+        List<T> content = contentQuery
+                .where(root.get("id", UUID.class).in(ids))
+                .distinct()
                 .fetch();
 
-        // 🔹 count query (NO joins/fetch)
+        // count query (NO joins/fetch)
         long total = Optional.ofNullable(
                 queryFactory
                         .select(root.count())
@@ -103,6 +113,7 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
                 PathBuilder<Object> join = current.get(parts[i], Object.class);
 
                 query.leftJoin(join);
+                // Store the join path for future reference to avoid duplicate joins and fetch joins will be applied later in applyJoins method
                 joins.put(key, join);
             }
 
@@ -113,7 +124,8 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
     }
 
     // Dynamic predicate builder
-    private BooleanExpression buildPredicate(PathBuilder<?> path,
+
+    protected BooleanExpression buildPredicate(PathBuilder<?> path,
             String field,
             String operator,
             List<Object> values) {
@@ -148,6 +160,42 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
                 return path.get(actualField).in(values);
         }
     }
+
+    private void applyJoins(
+        JPAQuery<?> query,
+        PathBuilder<T> root,
+        Map<String, PathBuilder<?>> joins,
+        List<String> loadRelations) {
+
+    for (String relation : loadRelations) {
+
+        String[] parts = relation.split("\\.");
+        PathBuilder<?> current = root;
+
+        StringBuilder joinKey = new StringBuilder();
+
+        for (int i = 0; i < parts.length; i++) {
+
+            if (joinKey.length() > 0)
+                joinKey.append(".");
+            joinKey.append(parts[i]);
+
+            String key = joinKey.toString();
+
+            if (!joins.containsKey(key)) {
+                PathBuilder<Object> join = current.get(parts[i], Object.class);
+                // Apply fetch join for loadRelations to avoid N+1 problem
+                query.leftJoin(join).fetchJoin();
+                joins.put(key, join);
+            } else {
+                // If join already exists but not fetch joined, apply fetch join
+                query.leftJoin(joins.get(key)).fetchJoin();
+            }
+
+            current = joins.get(key);
+        }
+    }
+}
 
     public <DTO> List<DTO> castList(List<Object> values, Class<DTO> clazz) {
         return values.stream()

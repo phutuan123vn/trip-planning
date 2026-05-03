@@ -1,5 +1,6 @@
 package com.kms.tripplanning.utils.Impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,11 +30,14 @@ public class BaseRepositoryImpl<T, ID>
     }
 
     @Override
-    public Page<T> search(Map<String, List<Object>> filters, @Nullable Pageable pageable) {
+    public Page<T> search(Map<String, List<Object>> filters, List<String> loadRelations, @Nullable Pageable pageable) {
         if (pageable == null) {
             pageable = PageRequest.of(0, 10);
         }
-        return genericFilterRepository.search(filters, pageable);
+        if (loadRelations == null || loadRelations.isEmpty()) {
+            loadRelations = Collections.emptyList();
+        }
+        return genericFilterRepository.search(filters, loadRelations, pageable);
     }
 
     @Override

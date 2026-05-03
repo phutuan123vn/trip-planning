@@ -36,7 +36,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateToken(AuthUserDetails userDetails) {
         String token = Jwts.builder()
-                .id(userDetails.getId())
+                .id(userDetails.getId().toString())
                 .subject(userDetails.getUsername())
                 .claims(Map.ofEntries(
                         Map.entry("firstName", userDetails.getFirstName()),
@@ -86,7 +86,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateVerifyToken(AuthUserDetails userDetails) {
         String token = Jwts.builder()
-                .id(userDetails.getId())
+                .id(userDetails.getId().toString())
                 .subject(userDetails.getUsername())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5)) // 5 minutes
                 .claims(Map.ofEntries(

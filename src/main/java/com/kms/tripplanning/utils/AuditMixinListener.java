@@ -23,11 +23,11 @@ public class AuditMixinListener {
 
         AuditMixin auditEntity = (AuditMixin) entity;
         if (auditEntity.getCreatedBy() == null) {
-            auditEntity.setCreatedBy(currentUser.getId());
+            auditEntity.setCreatedBy(currentUser.getId().toString());
         } else if (auditEntity.isDeleted() && auditEntity.getDeletedBy() == null) {
-            auditEntity.setDeletedBy(currentUser.getId());
+            auditEntity.setDeletedBy(currentUser.getId().toString());
         } else {
-            auditEntity.setUpdatedBy(currentUser.getId());
+            auditEntity.setUpdatedBy(currentUser.getId().toString());
         }
     }
 

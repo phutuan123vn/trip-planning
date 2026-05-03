@@ -1,6 +1,8 @@
 package com.kms.tripplanning.entity;
 
 
+import java.util.UUID;
+
 import com.kms.tripplanning.utils.AuditMixin;
 
 import jakarta.persistence.Column;
@@ -24,7 +26,7 @@ public class User extends AuditMixin{
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
 
     @Column(name = "first_name", nullable = false)

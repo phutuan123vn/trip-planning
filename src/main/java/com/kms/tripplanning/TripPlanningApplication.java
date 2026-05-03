@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import com.kms.tripplanning.utils.BaseRepositoryFactoryBean;
 import com.kms.tripplanning.utils.Impl.BaseRepositoryImpl;
-import com.kms.tripplanning.utils.Impl.BaseRepositoryFactoryBean;
 
 @EnableAsync
 @SpringBootApplication

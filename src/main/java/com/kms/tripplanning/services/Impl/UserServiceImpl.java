@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(request.getLastName())
                 .build();
         userRepository.save(user);
-        eventPublisher.publishEvent(new UserCreatedEvent(user.getId(), user.getEmail(),
+        eventPublisher.publishEvent(new UserCreatedEvent(user.getId().toString(), user.getEmail(),
                 jwtService.generateVerifyToken(new AuthUserDetails(user))));
     }
 
