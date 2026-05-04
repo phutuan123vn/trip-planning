@@ -18,30 +18,46 @@ import com.kms.tripplanning.utils.GenericFilterRepository;
 import jakarta.persistence.EntityManager;
 
 public class BaseRepositoryImpl<T, ID>
-        extends SimpleJpaRepository<T, ID>
-        implements BaseRepository<T, ID> {
+    extends SimpleJpaRepository<T, ID>
+    implements BaseRepository<T, ID> {
 
-    private final GenericFilterRepository<T> genericFilterRepository;
+  private final GenericFilterRepository<T> genericFilterRepository;
 
-    public BaseRepositoryImpl(JpaEntityInformation<T, ?> entityInformation,
-            EntityManager em, GenericFilterFactory genericFilterFactory) {
-        super(entityInformation, em);
-        this.genericFilterRepository = genericFilterFactory.<T>create(entityInformation.getJavaType());
+  public BaseRepositoryImpl(
+      JpaEntityInformation<T, ?> entityInformation,
+      EntityManager em,
+      GenericFilterFactory genericFilterFactory) {
+    super(entityInformation, em);
+    this.genericFilterRepository = genericFilterFactory.<T>create(
+        entityInformation.getJavaType());
+  }
+
+  @Override
+  public Page<T> search(
+      Map<String, List<Object>> filters,
+      @Nullable Pageable pageable,
+      @Nullable List<String> loadRelations) {
+    if (pageable == null) {
+      pageable = PageRequest.of(0, 10);
     }
-
-    @Override
-    public Page<T> search(Map<String, List<Object>> filters, List<String> loadRelations, @Nullable Pageable pageable) {
-        if (pageable == null) {
-            pageable = PageRequest.of(0, 10);
-        }
-        if (loadRelations == null || loadRelations.isEmpty()) {
-            loadRelations = Collections.emptyList();
-        }
-        return genericFilterRepository.search(filters, loadRelations, pageable);
+    if (loadRelations == null || loadRelations.isEmpty()) {
+      loadRelations = Collections.emptyList();
     }
+    return genericFilterRepository.search(filters, pageable, loadRelations);
+  }
 
-    @Override
-    public <DTO> List<DTO> castList(List<Object> values, Class<DTO> clazz) {
-        return genericFilterRepository.castList(values, clazz);
-    }
+  @Override
+  public <DTO> List<DTO> castList(List<Object> values, Class<DTO> clazz) {
+    return genericFilterRepository.castList(values, clazz);
+  }
+
+  @Override
+  public Page<T> search(Map<String, List<Object>> filters) {
+    return search(filters, null, null);
+  }
+
+  @Override
+  public Page<T> search(Map<String, List<Object>> filters, Pageable pageable) {
+    return search(filters, pageable, null);
+  }
 }
