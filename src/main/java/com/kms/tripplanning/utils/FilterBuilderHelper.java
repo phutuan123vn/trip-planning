@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Sort;
+
 public class FilterBuilderHelper {
 
     private Map<String, List<Object>> filters;
@@ -24,5 +26,16 @@ public class FilterBuilderHelper {
 
     public Map<String, List<Object>> build() {
         return filters;
+    }
+
+    public static Sort buildSort(String sortBy, String sortDirection) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            return Sort.unsorted();
+        }
+        Sort.Direction direction = Sort.Direction.ASC;
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            direction = Sort.Direction.DESC;
+        }
+        return Sort.by(direction, sortBy);
     }
 }
