@@ -32,7 +32,7 @@ public class Trip extends AuditMixin {
     @Column(name = "end_date")
     private Date endDate;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany
     @JoinTable(
             name = "trip_destinations",
             joinColumns = @JoinColumn(name = "trip_id"),

@@ -7,15 +7,11 @@ import com.kms.tripplanning.utils.Impl.DestinationFilterRepositoryImpl;
 import com.kms.tripplanning.utils.Impl.GenericFilterRepositoryImpl;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 @Component
 public class GenericFilterFactory {
-    
-    @PersistenceContext
-    private EntityManager em;
 
-    public <T> GenericFilterRepository<T> create(Class<T> entityClass) {
+    public <T> GenericFilterRepository<T> create(Class<T> entityClass, EntityManager em) {
 
         if (entityClass.equals(Destination.class)) {
             return (GenericFilterRepository<T>) new DestinationFilterRepositoryImpl(em);

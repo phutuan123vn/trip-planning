@@ -30,7 +30,7 @@ public class BaseRepositoryImpl<T, ID>
       GenericFilterFactory genericFilterFactory) {
     super(entityInformation, em);
     this.genericFilterRepository = genericFilterFactory.<T>create(
-        entityInformation.getJavaType());
+        entityInformation.getJavaType(), em);
   }
 
   @Override

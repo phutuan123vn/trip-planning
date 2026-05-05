@@ -31,7 +31,7 @@ public class Destination {
 
     private float rating;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany
     @JoinTable(
         name = "destination_categories",
         joinColumns = @JoinColumn(name = "destination_id"),
