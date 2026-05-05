@@ -3,6 +3,7 @@ package com.kms.tripplanning.utils.Impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -47,8 +48,8 @@ public class BaseRepositoryImpl<T, ID>
   }
 
   @Override
-  public <DTO> List<DTO> castList(List<Object> values, Class<DTO> clazz) {
-    return genericFilterRepository.castList(values, clazz);
+  public <S, T> Page<T> castDTO(Page<S> values, Function<S, T> mapper) {
+    return genericFilterRepository.castDTO(values, mapper);
   }
 
   @Override

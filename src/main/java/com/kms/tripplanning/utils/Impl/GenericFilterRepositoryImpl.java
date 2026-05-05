@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -203,7 +204,12 @@ public class GenericFilterRepositoryImpl<
     }
   }
 
-  public <DTO> List<DTO> castList(List<Object> values, Class<DTO> clazz) {
-    return values.stream().map(clazz::cast).toList();
-  }
+  public <S, T> Page<T> castDTO(Page<S> values, Function<S, T> mapper) {
+    List<T> content = values.getContent()
+            .stream()
+            .map(mapper)
+            .toList();
+
+    return new PageImpl<>(content, values.getPageable(), values.getTotalElements());
+}
 }

@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ApiRequest {
+public class PaginationRequest {
 
     private Map<String, List<String>> filters;
 

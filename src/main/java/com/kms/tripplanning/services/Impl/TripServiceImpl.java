@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +18,7 @@ import com.kms.tripplanning.repository.DestinationRepository;
 import com.kms.tripplanning.repository.TripRepository;
 import com.kms.tripplanning.services.TripService;
 import com.kms.tripplanning.utils.FilterBuilderHelper;
+import com.kms.tripplanning.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -91,18 +92,20 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public List<TripDetail> searchTrips(
+    public Page<TripDetail> searchTrips(
             Map<String, List<String>> filters,
             String sortBy,
             String sortDirection,
             int page,
             int size) {
+        var user = SecurityUtils.getCurrentUser();
         FilterBuilderHelper filterBuilder = new FilterBuilderHelper();
         filters.forEach(filterBuilder::addFilter);
+        filterBuilder.addFilter("createdBy", user.getId().toString());
         var trips = tripRepository.search(
                 filterBuilder.build(),
                 PageRequest.of(page, size, FilterBuilderHelper.buildSort(sortBy, sortDirection)),
                 List.of("destinations", "destinations.categories"));
-        return trips.stream().map(TripDetail::from).toList();
+        return tripRepository.castDTO(trips, TripDetail::from);
     }
 }

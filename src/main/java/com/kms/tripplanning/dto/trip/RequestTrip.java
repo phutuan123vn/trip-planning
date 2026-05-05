@@ -39,13 +39,4 @@ public class RequestTrip {
         private List<UUID> destinationIds = Collections.emptyList();
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class TripListItems {
-
-        private 
-
-    }
-
 }
