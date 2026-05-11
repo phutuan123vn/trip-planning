@@ -64,7 +64,7 @@ public class DataSeeder implements CommandLineRunner {
             // assign 1–3 categories
             Collections.shuffle(categories);
             int count = 1 + random.nextInt(3);
-            d.setCategories(new ArrayList<>(categories.subList(0, count)));
+            d.setCategories(new HashSet<>(categories.subList(0, count)));
 
             destinations.add(d);
         }
@@ -90,7 +90,7 @@ public class DataSeeder implements CommandLineRunner {
             Collections.shuffle(destinations);
             int count = 3 + random.nextInt(4);
 
-            t.setDestinations(new ArrayList<>(destinations.subList(0, count)));
+            t.setDestinations(new HashSet<>(destinations.subList(0, count)));
 
             trips.add(t);
         }

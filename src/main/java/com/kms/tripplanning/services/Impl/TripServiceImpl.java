@@ -42,7 +42,7 @@ public class TripServiceImpl implements TripService {
             if (destinations.size() != request.getDestinationIds().size()) {
                 throw new NotFoundException("One or more destinations not found with provided ids");
             }
-            trip.setDestinations(destinations);
+            trip.setDestinations(new java.util.HashSet<>(destinations));
         }
         tripRepository.save(trip);
         return TripDetail.from(trip);
@@ -62,7 +62,7 @@ public class TripServiceImpl implements TripService {
             if (destinations.size() != request.getDestinationIds().size()) {
                 throw new NotFoundException("One or more destinations not found with provided ids");
             }
-            trip.setDestinations(destinations);
+            trip.setDestinations(new java.util.HashSet<>(destinations));
         }
 
         tripRepository.save(trip);

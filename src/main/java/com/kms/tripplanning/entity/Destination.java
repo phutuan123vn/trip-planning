@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.validator.constraints.URL;
@@ -37,7 +37,8 @@ public class Destination {
         joinColumns = @JoinColumn(name = "destination_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private List<Category> categories;
+    @org.hibernate.annotations.BatchSize(size = 20)
+    private Set<Category> categories;
 
     private double latitude;
 

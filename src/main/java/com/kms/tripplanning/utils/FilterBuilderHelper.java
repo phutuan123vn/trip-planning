@@ -20,6 +20,12 @@ public class FilterBuilderHelper {
         }
     }
 
+    public void addFilter(String key, List<String> values) {
+        if (values != null && !values.isEmpty()) {
+            filters.put(key, List.copyOf(values));
+        }
+    }
+
     public void removeFilter(String key) {
         filters.remove(key);
     }

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.kms.tripplanning.utils.AuditMixin;
@@ -38,7 +38,7 @@ public class Trip extends AuditMixin {
             joinColumns = @JoinColumn(name = "trip_id"),
             inverseJoinColumns = @JoinColumn(name = "destination_id")
     )
-    List<Destination> destinations;
+    Set<Destination> destinations;
 
 
 }

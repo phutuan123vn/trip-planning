@@ -2,6 +2,7 @@ package com.kms.tripplanning.services.Impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -67,7 +68,7 @@ public class DestinationServiceImpl implements DestinationService {
             if (categories.size() != request.getCategoryIds().size()) {
                 throw new NotFoundException("One or more categories not found with provided ids");
             }
-            destination.setCategories(categories);
+            destination.setCategories(Set.copyOf(categories));
         }
         destinationRepository.save(destination);
         return DestinationDetail.from(destination);
@@ -101,7 +102,7 @@ public class DestinationServiceImpl implements DestinationService {
             if (categories.size() != request.getCategoryIds().size()) {
                 throw new NotFoundException("One or more categories not found with provided ids");
             }
-            destination.setCategories(categories);
+            destination.setCategories(Set.copyOf(categories));
         }
         destinationRepository.save(destination);
         return DestinationDetail.from(destination);
