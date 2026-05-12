@@ -1,0 +1,4 @@
+- Using Java 21+
+- Spring 4
+- migration with `./gradlew flywayMigrate`
+- create `.env` from `.env.example` before running
