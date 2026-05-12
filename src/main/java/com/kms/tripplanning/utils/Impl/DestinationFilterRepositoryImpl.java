@@ -22,11 +22,11 @@ public class DestinationFilterRepositoryImpl extends GenericFilterRepositoryImpl
             String operator,
             List<Object> values) {
 
-        if ("coordinates".equals(field)) {
+        if ("coordinates".equals(field) && operator.equals("in")) {
             return buildCoordinatesPredicate(path, values);
         }
 
-        if ("coordinates__near".equals(field)) {
+        if ("coordinates".equals(field) && operator.equals("near")) {
             return buildCoordinatesNearPredicate(path, values);
         }
 
@@ -42,9 +42,9 @@ public class DestinationFilterRepositoryImpl extends GenericFilterRepositoryImpl
             double latitude = Double.parseDouble(values.get(0).toString());
             double longitude = Double.parseDouble(values.get(1).toString());
 
-            // Assuming the entity has 'latitude' and 'longitude' fields
-            return path.get("latitude", Double.class).eq(latitude)
-                    .and(path.get("longitude", Double.class).eq(longitude));
+            // Assuming the entity has 'latitude' and 'longtitude' fields
+            return path.getNumber("latitude", Double.class).eq(latitude)
+                    .and(path.getNumber("longtitude", Double.class).eq(longitude));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Coordinates values must be valid numbers: [latitude, longitude]", e);
         }
@@ -63,7 +63,7 @@ public class DestinationFilterRepositoryImpl extends GenericFilterRepositoryImpl
             double radiusInKm = Double.parseDouble(values.get(2).toString());
 
             NumberPath<Double> latField = path.getNumber("latitude", Double.class);
-            NumberPath<Double> lonField = path.getNumber("longitude", Double.class);
+            NumberPath<Double> lonField = path.getNumber("longtitude", Double.class);
 
             BooleanExpression boundingBox = buildBoundingBox(latField, lonField, latitude, longitude, radiusInKm);
 

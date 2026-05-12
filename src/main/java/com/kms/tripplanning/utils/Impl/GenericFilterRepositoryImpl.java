@@ -104,28 +104,9 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
     JPAQuery<Long> countQuery = queryFactory
         .select(root.get("id").countDistinct())
         .from(root);
-    // Rebuild joins for the count query so nested filter paths resolve correctly
-    Map<String, PathBuilder<?>> countJoins = new HashMap<>();
-    Map<String, Class<?>> countJoinClasses = new HashMap<>();
-    BooleanBuilder countBuilder = new BooleanBuilder();
-    for (Map.Entry<String, List<Object>> entry : filters.entrySet()) {
-      String key = entry.getKey();
-      List<Object> values = entry.getValue();
-      if (values == null || values.isEmpty())
-        continue;
-      String field = key;
-      String operator = "in";
-      if (key.contains("__")) {
-        String[] parts = key.split("__");
-        field = parts[0];
-        operator = parts[1];
-      }
-      PathBuilder<?> path = resolvePath(root, countJoins, countJoinClasses, field, countQuery);
-      List<Object> convertedValues = convertFilterValues(field, values, countJoinClasses);
-      countBuilder.and(buildPredicate(path, field, operator, convertedValues));
-    }
+
     long total = Optional.ofNullable(
-        countQuery.where(countBuilder).fetchOne()).orElse(0L);
+        countQuery.where(builder).fetchOne()).orElse(0L);
 
     return new PageImpl<>(content, pageable, total);
   }
