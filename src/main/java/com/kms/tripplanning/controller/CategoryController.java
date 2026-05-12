@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.kms.tripplanning.dto.PaginationRequest;
@@ -11,7 +12,6 @@ import com.kms.tripplanning.dto.category.RequestCategory.CategoryCreate;
 import com.kms.tripplanning.dto.category.ResponseCategory.CategoryDetail;
 import com.kms.tripplanning.services.CategoryService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
