@@ -3,6 +3,7 @@ package com.kms.tripplanning.utils.Impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
@@ -37,14 +38,19 @@ public class BaseRepositoryImpl<T, ID>
   public Page<T> search(
       Map<String, List<Object>> filters,
       @Nullable Pageable pageable,
-      @Nullable List<String> loadRelations) {
+      @Nullable List<String> loadRelations,
+      @Nullable Set<String> allowedFields
+    ) {
     if (pageable == null) {
       pageable = PageRequest.of(0, 10);
     }
     if (loadRelations == null || loadRelations.isEmpty()) {
       loadRelations = Collections.emptyList();
     }
-    return genericFilterRepository.search(filters, pageable, loadRelations);
+    if (allowedFields == null || allowedFields.isEmpty()) {
+      allowedFields = Collections.emptySet();
+    }
+    return genericFilterRepository.search(filters, pageable, loadRelations, allowedFields);
   }
 
   @Override
@@ -54,11 +60,21 @@ public class BaseRepositoryImpl<T, ID>
 
   @Override
   public Page<T> search(Map<String, List<Object>> filters) {
-    return search(filters, null, null);
+    return search(filters, null, null, null);
   }
 
   @Override
   public Page<T> search(Map<String, List<Object>> filters, Pageable pageable) {
-    return search(filters, pageable, null);
+    return search(filters, pageable, null, null);
   }
+
+  @Override
+  public Page<T> search(Map<String, List<Object>> filters, Pageable pageable, Set<String> allowedFields) {
+    return search(filters, pageable, null, allowedFields);
+  }
+
+  public Page<T> search(Map<String, List<Object>> filters, Set<String> allowedFields) {
+    return search(filters, null, null, allowedFields);
+  }
+
 }

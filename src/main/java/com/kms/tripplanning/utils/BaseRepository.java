@@ -2,6 +2,7 @@ package com.kms.tripplanning.utils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,4 +14,8 @@ public interface BaseRepository<T, ID> extends JpaRepository<T, ID>, GenericFilt
   Page<T> search(Map<String, List<Object>> filters);
 
   Page<T> search(Map<String, List<Object>> filters, Pageable pageable);
+
+  Page<T> search(Map<String, List<Object>> filters, Pageable pageable, Set<String> allowedFields);
+
+  Page<T> search(Map<String, List<Object>> filters, Set<String> allowedFields);
 }

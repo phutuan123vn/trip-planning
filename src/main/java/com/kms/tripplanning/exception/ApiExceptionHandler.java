@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.kms.tripplanning.dto.ApiResponse;
 import com.kms.tripplanning.dto.ApiResponse.ErrorResponse;
 import com.kms.tripplanning.dto.ApiResponse.ValidationError;
+import com.kms.tripplanning.exception.types.BadRequestException;
 import com.kms.tripplanning.exception.types.NotFoundException;
 import com.kms.tripplanning.exception.types.ValidationException;
 
@@ -65,5 +66,14 @@ public class ApiExceptionHandler {
                                 "NOT_FOUND",
                                 e.getMessage());
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+
+        @ExceptionHandler(BadRequestException.class)
+        public ResponseEntity<ErrorResponse<String>> handleBadRequestException(BadRequestException e) {
+                var errorResponse = ApiResponse.<String>error(
+                                "Bad Request",
+                                "BAD_REQUEST",
+                                e.getMessage());
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 }
