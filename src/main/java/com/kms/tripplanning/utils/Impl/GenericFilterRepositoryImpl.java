@@ -538,8 +538,10 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
    * hierarchy for inherited fields (e.g. {@code AuditMixin}).
    */
   private FieldInfo resolveFieldInfo(Class<?> clazz, String fieldName) {
-    String cacheKey = clazz.getName() + "#" + fieldName;
-    return FIELD_INFO_CACHE.computeIfAbsent(cacheKey, k -> doResolveFieldInfo(clazz, fieldName));
+    // TODO: Implement cache
+    // String cacheKey = clazz.getName() + "#" + fieldName;
+    // return FIELD_INFO_CACHE.computeIfAbsent(cacheKey, k -> doResolveFieldInfo(clazz, fieldName));
+    return doResolveFieldInfo(clazz, fieldName);
   }
 
   private FieldInfo doResolveFieldInfo(Class<?> clazz, String fieldName) {
