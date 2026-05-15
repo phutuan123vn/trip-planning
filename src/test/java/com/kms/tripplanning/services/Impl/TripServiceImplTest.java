@@ -297,7 +297,7 @@ class TripServiceImplTest {
     @Test
     void getTripById_shouldReturnTripDetail_whenFound() {
         Page<Trip> page = new PageImpl<>(List.of(sampleTrip));
-        when(tripRepository.search(any(), any(), any(List.class))).thenReturn(page);
+        when(tripRepository.search(any(), any(), any(Set.class))).thenReturn(page);
 
         TripDetail result = tripService.getTripById(tripId);
 
@@ -307,7 +307,7 @@ class TripServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     void getTripById_shouldThrowNotFoundException_whenNotFound() {
-        when(tripRepository.search(any(), any(), any(List.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(), any(Set.class))).thenReturn(Page.empty());
 
         UUID randomId = UUID.randomUUID();
         assertThatThrownBy(() -> tripService.getTripById(randomId))
@@ -323,7 +323,7 @@ class TripServiceImplTest {
         Page<Trip> page = new PageImpl<>(List.of(sampleTrip));
         Page<TripDetail> detailPage = new PageImpl<>(List.of(TripDetail.from(sampleTrip)));
 
-        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(page);
+        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(page);
         when(tripRepository.castDTO(eq(page), any(Function.class))).thenReturn(detailPage);
 
         Page<TripDetail> result = tripService.searchTrips(Map.of(), "name", "asc", 0, 10);
@@ -335,13 +335,13 @@ class TripServiceImplTest {
     @Test
     void searchTrips_shouldAddCreatedByFilterFromCurrentUser() {
         mockCurrentUser();
-        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
         when(tripRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         tripService.searchTrips(new HashMap<>(), null, null, 0, 10);
 
         ArgumentCaptor<Map<String, List<Object>>> filterCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(tripRepository).search(filterCaptor.capture(), any(Pageable.class), any(List.class));
+        verify(tripRepository).search(filterCaptor.capture(), any(Pageable.class), any(Set.class));
 
         assertThat(filterCaptor.getValue()).containsKey("createdBy");
         assertThat(filterCaptor.getValue().get("createdBy").get(0).toString()).isEqualTo(userId.toString());
@@ -351,12 +351,12 @@ class TripServiceImplTest {
     @Test
     void searchTrips_shouldLoadDestinationsAndCategoriesRelations() {
         mockCurrentUser();
-        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
         when(tripRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         tripService.searchTrips(Map.of(), null, null, 0, 10);
 
-        ArgumentCaptor<List<String>> relationsCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Set<String>> relationsCaptor = ArgumentCaptor.forClass(Set.class);
         verify(tripRepository).search(any(), any(Pageable.class), relationsCaptor.capture());
 
         assertThat(relationsCaptor.getValue()).containsExactly("destinations", "destinations.categories");
@@ -366,7 +366,7 @@ class TripServiceImplTest {
     @Test
     void searchTrips_shouldReturnEmptyPage_whenNoResults() {
         mockCurrentUser();
-        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
         when(tripRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         Page<TripDetail> result = tripService.searchTrips(Map.of(), null, null, 0, 10);

@@ -2,7 +2,9 @@ package com.kms.tripplanning.services.Impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.LinkedHashSet;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -83,10 +85,11 @@ public class TripServiceImpl implements TripService {
     public TripDetail getTripById(UUID tripId) {
         FilterBuilderHelper filterBuilder = new FilterBuilderHelper();
         filterBuilder.addFilter("id", tripId.toString());
+        Set<String> relations = new LinkedHashSet<>(List.of("destinations", "destinations.categories"));
         var trip = tripRepository.search(
                 filterBuilder.build(),
                 null,
-                List.of("destinations", "destinations.categories")).stream().findFirst()
+            relations).stream().findFirst()
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
         return TripDetail.from(trip);
     }
@@ -102,10 +105,11 @@ public class TripServiceImpl implements TripService {
         FilterBuilderHelper filterBuilder = new FilterBuilderHelper();
         filters.forEach(filterBuilder::addFilter);
         filterBuilder.addFilter("createdBy", user.getId().toString());
+        Set<String> relations = new LinkedHashSet<>(List.of("destinations", "destinations.categories"));
         var trips = tripRepository.search(
                 filterBuilder.build(),
                 PageRequest.of(page, size, FilterBuilderHelper.buildSort(sortBy, sortDirection)),
-                List.of("destinations", "destinations.categories"));
+            relations);
         return tripRepository.castDTO(trips, TripDetail::from);
     }
 }

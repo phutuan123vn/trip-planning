@@ -39,7 +39,7 @@ public class DestinationServiceImpl implements DestinationService {
         var sort = FilterBuilderHelper.buildSort(sortBy, sortDirection);
         PageRequest pageRequest = PageRequest.of(page, size, sort);
         Page<Destination> destinations = destinationRepository.search(filterBuilder.build(), pageRequest,
-                List.of("categories"));
+                Set.of("categories"));
         return destinationRepository.castDTO(destinations, DestinationDetail::from);
     }
 

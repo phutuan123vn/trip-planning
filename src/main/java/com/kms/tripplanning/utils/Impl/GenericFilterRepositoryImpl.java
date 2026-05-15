@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +65,17 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
   private final Class<T> entityClass;
 
   public GenericFilterRepositoryImpl(EntityManager em, Class<T> entityClass) {
-    this.entityClass = entityClass;
+    Objects.requireNonNull(em, "entityManager");
+    this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
     this.queryFactory = new JPAQueryFactory(em);
+  }
+
+  /**
+   * Test-friendly constructor that allows injecting a mocked QueryDSL factory.
+   */
+  GenericFilterRepositoryImpl(JPAQueryFactory queryFactory, Class<T> entityClass) {
+    this.queryFactory = Objects.requireNonNull(queryFactory, "queryFactory");
+    this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
   }
 
   // ---------------------------------------------------------------------------

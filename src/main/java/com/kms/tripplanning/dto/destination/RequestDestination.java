@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ public class RequestDestination {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class DestinationCreate {
 
         @NotBlank(message = "Name is required")
@@ -36,8 +38,11 @@ public class RequestDestination {
         private String thumbnailUrl;
 
         @NotNull(message = "Rating is required")
+        @Builder.Default
         private float rating = 0.0f;
 
+
+        @Builder.Default
         private List<UUID> categoryIds = Collections.emptyList();
     }
 

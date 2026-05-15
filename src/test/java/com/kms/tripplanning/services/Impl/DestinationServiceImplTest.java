@@ -72,7 +72,7 @@ class DestinationServiceImplTest {
         Page<Destination> page = new PageImpl<>(List.of(sampleDestination));
         Page<DestinationDetail> detailPage = new PageImpl<>(List.of(DestinationDetail.from(sampleDestination)));
 
-        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(page);
+        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(page);
         when(destinationRepository.castDTO(eq(page), any(Function.class))).thenReturn(detailPage);
 
         Map<String, List<String>> filters = Map.of("city", List.of("Vung Tau"));
@@ -84,7 +84,7 @@ class DestinationServiceImplTest {
 
     @Test
     void listDestination_shouldReturnEmptyPage_whenNoResults() {
-        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
+        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
         when(destinationRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         Page<DestinationDetail> result = destinationService.listDestination(Map.of(), null, null, 0, 10);
@@ -95,12 +95,12 @@ class DestinationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     void listDestination_shouldPassCategoriesAsLoadRelation() {
-        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
+        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
         when(destinationRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         destinationService.listDestination(Map.of(), null, null, 0, 10);
 
-        ArgumentCaptor<List<String>> relationsCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Set<String>> relationsCaptor = ArgumentCaptor.forClass(Set.class);
         verify(destinationRepository).search(any(), any(Pageable.class), relationsCaptor.capture());
 
         assertThat(relationsCaptor.getValue()).containsExactly("categories");
@@ -108,13 +108,13 @@ class DestinationServiceImplTest {
 
     @Test
     void listDestination_shouldApplySortCorrectly() {
-        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
+        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
         when(destinationRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         destinationService.listDestination(Map.of(), "rating", "desc", 0, 10);
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(destinationRepository).search(any(), pageableCaptor.capture(), any(List.class));
+        verify(destinationRepository).search(any(), pageableCaptor.capture(), any(Set.class));
 
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("rating")).isNotNull();
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("rating").getDirection())
