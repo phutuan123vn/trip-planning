@@ -2,8 +2,7 @@ package com.kms.tripplanning.dto.trip;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Date;
-import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,8 +18,8 @@ class ResponseTripTest {
     void from_shouldMapAllFields() {
         UUID tripId = UUID.randomUUID();
         UUID destId = UUID.randomUUID();
-        Date start = new Date();
-        Date end = new Date();
+        OffsetDateTime start = OffsetDateTime.now();
+        OffsetDateTime end = OffsetDateTime.now().plusDays(1);
 
         Destination destination = Destination.builder()
                 .id(destId)

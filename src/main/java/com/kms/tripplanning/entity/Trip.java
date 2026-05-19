@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,10 +27,10 @@ public class Trip extends AuditMixin {
     private String name;
 
     @Column(name = "start_date")
-    private Date startDate;
+    private OffsetDateTime startDate;
 
     @Column(name = "end_date")
-    private Date endDate;
+    private OffsetDateTime endDate;
 
     @ManyToMany
     @JoinTable(

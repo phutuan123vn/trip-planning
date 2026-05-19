@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 
@@ -77,8 +78,8 @@ class TripServiceImplTest {
         sampleTrip = Trip.builder()
                 .id(tripId)
                 .name("Summer Trip")
-                .startDate(new Date())
-                .endDate(new Date(System.currentTimeMillis() + 86400000L))
+                .startDate(OffsetDateTime.now())
+                .endDate(OffsetDateTime.now().plusDays(1))
                 .destinations(Set.of(sampleDestination))
                 .build();
     }
@@ -110,8 +111,8 @@ class TripServiceImplTest {
     void createTrip_shouldSaveAndReturnTripDetail_withoutDestinations() {
         TripCreate request = new TripCreate();
         request.setName("Test Trip");
-        request.setStartDate(new Date());
-        request.setEndDate(new Date(System.currentTimeMillis() + 86400000L));
+        request.setStartDate(OffsetDateTime.now());
+        request.setEndDate(OffsetDateTime.now().plusDays(1));
         request.setDestinationIds(Collections.emptyList());
 
         when(tripRepository.save(any(Trip.class))).thenAnswer(inv -> {
@@ -131,8 +132,8 @@ class TripServiceImplTest {
     void createTrip_shouldSaveAndReturnTripDetail_withDestinations() {
         TripCreate request = new TripCreate();
         request.setName("Beach Trip");
-        request.setStartDate(new Date());
-        request.setEndDate(new Date(System.currentTimeMillis() + 86400000L));
+        request.setStartDate(OffsetDateTime.now());
+        request.setEndDate(OffsetDateTime.now().plusDays(1));
         request.setDestinationIds(List.of(destinationId));
 
         when(destinationRepository.findAllById(List.of(destinationId))).thenReturn(List.of(sampleDestination));
@@ -153,8 +154,8 @@ class TripServiceImplTest {
         UUID missingId = UUID.randomUUID();
         TripCreate request = new TripCreate();
         request.setName("Trip");
-        request.setStartDate(new Date());
-        request.setEndDate(new Date());
+        request.setStartDate(OffsetDateTime.now());
+        request.setEndDate(OffsetDateTime.now().plusDays(1));
         request.setDestinationIds(List.of(destinationId, missingId));
 
         when(destinationRepository.findAllById(List.of(destinationId, missingId)))
@@ -167,8 +168,8 @@ class TripServiceImplTest {
 
     @Test
     void createTrip_shouldMapNameAndDatesCorrectly() {
-        Date start = new Date();
-        Date end = new Date(System.currentTimeMillis() + 86400000L);
+        OffsetDateTime start = OffsetDateTime.now();
+        OffsetDateTime end = OffsetDateTime.now().plusDays(1);
 
         TripCreate request = new TripCreate();
         request.setName("Mapped Trip");
@@ -199,8 +200,8 @@ class TripServiceImplTest {
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(sampleTrip));
         when(tripRepository.save(any(Trip.class))).thenReturn(sampleTrip);
 
-        Date newStart = new Date();
-        Date newEnd = new Date(System.currentTimeMillis() + 172800000L);
+        OffsetDateTime newStart = OffsetDateTime.now();
+        OffsetDateTime newEnd = OffsetDateTime.now().plusDays(1);
 
         TripUpdate request = new TripUpdate();
         request.setName("Updated Trip");

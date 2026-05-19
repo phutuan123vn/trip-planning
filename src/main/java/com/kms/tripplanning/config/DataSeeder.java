@@ -83,8 +83,8 @@ public class DataSeeder implements CommandLineRunner {
             t.setCreatedAt(odt);
             t.setUpdatedAt(odt);
 
-            t.setStartDate(new Date());
-            t.setEndDate(new Date(System.currentTimeMillis() + (i + 5) * 24 * 60 * 60 * 1000));
+            t.setStartDate(odt);
+            t.setEndDate(odt.plusDays(i + 5));
 
             // assign 3–6 destinations
             Collections.shuffle(destinations);

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.time.ZoneOffset;
 import java.util.LinkedHashSet;
 
 import org.springframework.data.domain.Page;
@@ -36,8 +37,8 @@ public class TripServiceImpl implements TripService {
     public TripDetail createTrip(TripCreate request) {
         var trip = Trip.builder()
                 .name(request.getName())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
+                .startDate(request.getStartDate().withOffsetSameInstant(ZoneOffset.UTC))
+                .endDate(request.getEndDate().withOffsetSameInstant(ZoneOffset.UTC))
                 .build();
         if (request.getDestinationIds() != null && !request.getDestinationIds().isEmpty()) {
             var destinations = destinationRepository.findAllById(request.getDestinationIds());
@@ -56,8 +57,8 @@ public class TripServiceImpl implements TripService {
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
 
         trip.setName(request.getName() != null ? request.getName() : trip.getName());
-        trip.setStartDate(request.getStartDate() != null ? request.getStartDate() : trip.getStartDate());
-        trip.setEndDate(request.getEndDate() != null ? request.getEndDate() : trip.getEndDate());
+        trip.setStartDate(request.getStartDate() != null ? request.getStartDate().withOffsetSameInstant(ZoneOffset.UTC) : trip.getStartDate());
+        trip.setEndDate(request.getEndDate() != null ? request.getEndDate().withOffsetSameInstant(ZoneOffset.UTC) : trip.getEndDate());
 
         if (request.getDestinationIds() != null && !request.getDestinationIds().isEmpty()) {
             var destinations = destinationRepository.findAllById(request.getDestinationIds());

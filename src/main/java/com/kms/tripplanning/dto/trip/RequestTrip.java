@@ -1,7 +1,7 @@
 package com.kms.tripplanning.dto.trip;
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,11 +24,10 @@ public class RequestTrip {
         private String name;
 
         @NotNull(message = "Start date must not be empty")
-        private Date startDate;
+        private OffsetDateTime startDate;
 
         @NotNull(message = "End date must not be empty")
-        private Date endDate;
-
+        private OffsetDateTime endDate;
 
         @Builder.Default
         private List<UUID> destinationIds = Collections.emptyList();
@@ -40,8 +39,8 @@ public class RequestTrip {
     @Builder
     public static class TripUpdate {
         private String name;
-        private Date startDate;
-        private Date endDate;
+        private OffsetDateTime startDate;
+        private OffsetDateTime endDate;
         private List<UUID> destinationIds = Collections.emptyList();
     }
 
