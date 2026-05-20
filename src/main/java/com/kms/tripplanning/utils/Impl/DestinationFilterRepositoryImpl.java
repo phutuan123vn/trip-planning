@@ -42,9 +42,9 @@ public class DestinationFilterRepositoryImpl extends GenericFilterRepositoryImpl
             double latitude = Double.parseDouble(values.get(0).toString());
             double longitude = Double.parseDouble(values.get(1).toString());
 
-            // Assuming the entity has 'latitude' and 'longtitude' fields
+            // Assuming the entity has 'latitude' and 'longitude' fields
             return path.getNumber("latitude", Double.class).eq(latitude)
-                    .and(path.getNumber("longtitude", Double.class).eq(longitude));
+                    .and(path.getNumber("longitude", Double.class).eq(longitude));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Coordinates values must be valid numbers: [latitude, longitude]", e);
         }
@@ -63,7 +63,7 @@ public class DestinationFilterRepositoryImpl extends GenericFilterRepositoryImpl
             double radiusInKm = Double.parseDouble(values.get(2).toString());
 
             NumberPath<Double> latField = path.getNumber("latitude", Double.class);
-            NumberPath<Double> lonField = path.getNumber("longtitude", Double.class);
+            NumberPath<Double> lonField = path.getNumber("longitude", Double.class);
 
             BooleanExpression boundingBox = buildBoundingBox(latField, lonField, latitude, longitude, radiusInKm);
 

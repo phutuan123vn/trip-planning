@@ -69,12 +69,12 @@ public class BaseRepositoryImpl<T, ID>
   }
 
   @Override
-  public Page<T> search(Map<String, List<Object>> filters, Pageable pageable, Set<String> allowedFields) {
-    return search(filters, pageable, null, allowedFields);
+  public Page<T> search(Map<String, List<Object>> filters, Pageable pageable, List<String> loadRelations) {
+    return search(filters, pageable, loadRelations, null);
   }
 
-  public Page<T> search(Map<String, List<Object>> filters, Set<String> allowedFields) {
-    return search(filters, null, null, allowedFields);
+  public Page<T> search(Map<String, List<Object>> filters, List<String> loadRelations) {
+    return search(filters, null, loadRelations, null);
   }
 
 }

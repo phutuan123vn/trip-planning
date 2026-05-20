@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 
 import com.kms.tripplanning.dto.category.RequestCategory.CategoryCreate;
+import com.kms.tripplanning.dto.category.RequestCategory.CategoryUpdate;
 import com.kms.tripplanning.dto.category.ResponseCategory.CategoryDetail;
 
 public interface CategoryService {
@@ -25,5 +26,5 @@ public interface CategoryService {
 
     void deleteCategory(UUID categoryId);
 
-    CategoryDetail updateCategory(UUID categoryId, CategoryCreate request);
+    CategoryDetail updateCategory(UUID categoryId, CategoryUpdate request);
 }

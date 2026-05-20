@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kms.tripplanning.dto.trip.TripMapper;
 import com.kms.tripplanning.dto.trip.RequestTrip.TripCreate;
 import com.kms.tripplanning.dto.trip.RequestTrip.TripUpdate;
 import com.kms.tripplanning.dto.trip.ResponseTrip.TripDetail;
@@ -31,15 +32,12 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
     private final DestinationRepository destinationRepository;
+    private final TripMapper tripMapper;    
 
     @Override
     @Transactional
     public TripDetail createTrip(TripCreate request) {
-        var trip = Trip.builder()
-                .name(request.getName())
-                .startDate(request.getStartDate().withOffsetSameInstant(ZoneOffset.UTC))
-                .endDate(request.getEndDate().withOffsetSameInstant(ZoneOffset.UTC))
-                .build();
+        var trip = tripMapper.toTrip(request);
         if (request.getDestinationIds() != null && !request.getDestinationIds().isEmpty()) {
             var destinations = destinationRepository.findAllById(request.getDestinationIds());
             if (destinations.size() != request.getDestinationIds().size()) {
@@ -56,9 +54,7 @@ public class TripServiceImpl implements TripService {
         var trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
 
-        trip.setName(request.getName() != null ? request.getName() : trip.getName());
-        trip.setStartDate(request.getStartDate() != null ? request.getStartDate().withOffsetSameInstant(ZoneOffset.UTC) : trip.getStartDate());
-        trip.setEndDate(request.getEndDate() != null ? request.getEndDate().withOffsetSameInstant(ZoneOffset.UTC) : trip.getEndDate());
+        tripMapper.updateTrip(request, trip);
 
         if (request.getDestinationIds() != null && !request.getDestinationIds().isEmpty()) {
             var destinations = destinationRepository.findAllById(request.getDestinationIds());
@@ -86,13 +82,13 @@ public class TripServiceImpl implements TripService {
     public TripDetail getTripById(UUID tripId) {
         FilterBuilderHelper filterBuilder = new FilterBuilderHelper();
         filterBuilder.addFilter("id", tripId.toString());
-        Set<String> relations = new LinkedHashSet<>(List.of("destinations", "destinations.categories"));
+        List<String> relations = List.of("destinations", "destinations.categories");
         var trip = tripRepository.search(
                 filterBuilder.build(),
                 null,
             relations).stream().findFirst()
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
-        return TripDetail.from(trip);
+        return tripMapper.toTripDetail(trip);
     }
 
     @Override
@@ -106,11 +102,11 @@ public class TripServiceImpl implements TripService {
         FilterBuilderHelper filterBuilder = new FilterBuilderHelper();
         filters.forEach(filterBuilder::addFilter);
         filterBuilder.addFilter("createdBy", user.getId().toString());
-        Set<String> relations = new LinkedHashSet<>(List.of("destinations", "destinations.categories"));
+        List<String> relations = List.of("destinations", "destinations.categories");
         var trips = tripRepository.search(
                 filterBuilder.build(),
                 PageRequest.of(page, size, FilterBuilderHelper.buildSort(sortBy, sortDirection)),
             relations);
-        return tripRepository.castDTO(trips, TripDetail::from);
+        return tripRepository.castDTO(trips, tripMapper::toTripDetail);
     }
 }

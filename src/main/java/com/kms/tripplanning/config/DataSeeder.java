@@ -1,6 +1,5 @@
 package com.kms.tripplanning.config;
 
-
 import com.kms.tripplanning.entity.*;
 import com.kms.tripplanning.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +35,7 @@ public class DataSeeder implements CommandLineRunner {
         } else {
             List<String> categoryNames = List.of(
                     "Beach", "Mountain", "City", "Historical",
-                    "Nature", "Adventure", "Food", "Cultural"
-            );
+                    "Nature", "Adventure", "Food", "Cultural");
 
             categories = categoryNames.stream().map(name -> {
                 Category c = new Category();
@@ -58,7 +56,7 @@ public class DataSeeder implements CommandLineRunner {
             d.setCountry("Vietnam");
             d.setRating((float) (3 + random.nextDouble() * 2));
             d.setLatitude(8 + random.nextDouble() * 15);
-            d.setLongtitude(102 + random.nextDouble() * 10);
+            d.setLongitude(102 + random.nextDouble() * 10);
             d.setThumbnailUrl("https://example.com/img" + i + ".jpg");
 
             // assign 1–3 categories
@@ -78,7 +76,7 @@ public class DataSeeder implements CommandLineRunner {
             Trip t = new Trip();
             Date date = new Date();
             OffsetDateTime odt = date.toInstant()
-                .atOffset(ZoneOffset.UTC);
+                    .atOffset(ZoneOffset.UTC);
             t.setName("Trip " + i);
             t.setCreatedAt(odt);
             t.setUpdatedAt(odt);

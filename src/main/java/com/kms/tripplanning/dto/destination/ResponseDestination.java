@@ -22,7 +22,7 @@ public class ResponseDestination {
         private float rating;
         private List<CategoryDetail> categories;
         private double latitude;
-        private double longtitude;
+        private double longitude;
         private String thumbnailUrl;
 
         public static DestinationDetail from(Destination destination) {
@@ -36,7 +36,7 @@ public class ResponseDestination {
                     .map(CategoryDetail::from)
                     .toList();
             detail.latitude = destination.getLatitude();
-            detail.longtitude = destination.getLongtitude();
+            detail.longitude = destination.getLongitude();
             detail.thumbnailUrl = destination.getThumbnailUrl();
             return detail;
         }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.kms.tripplanning.dto.PaginationRequest;
 import com.kms.tripplanning.dto.category.RequestCategory.CategoryCreate;
+import com.kms.tripplanning.dto.category.RequestCategory.CategoryUpdate;
 import com.kms.tripplanning.dto.category.ResponseCategory.CategoryDetail;
 import com.kms.tripplanning.services.CategoryService;
 
@@ -48,7 +49,7 @@ public class CategoryController {
     }
 
     @PostMapping("/{categoryId}")
-    public CategoryDetail update(@PathVariable UUID categoryId, @RequestBody CategoryCreate request) {
+    public CategoryDetail update(@PathVariable UUID categoryId, @RequestBody CategoryUpdate request) {
         return categoryService.updateCategory(categoryId, request);
     }
 

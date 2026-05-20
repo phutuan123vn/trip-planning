@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.kms.tripplanning.dto.destination.DestinationMapper;
 import com.kms.tripplanning.dto.destination.RequestDestination.DestinationCreate;
 import com.kms.tripplanning.dto.destination.RequestDestination.DestinationUpdate;
 import com.kms.tripplanning.dto.destination.ResponseDestination.DestinationDetail;
@@ -30,6 +31,8 @@ public class DestinationServiceImpl implements DestinationService {
 
     private final CategoryRepository categoryRepository;
 
+    private final DestinationMapper destinationMapper;
+
     @Override
     public Page<DestinationDetail> listDestination(Map<String, List<String>> filters, String sortBy,
             String sortDirection, int page, int size) {
@@ -39,8 +42,8 @@ public class DestinationServiceImpl implements DestinationService {
         var sort = FilterBuilderHelper.buildSort(sortBy, sortDirection);
         PageRequest pageRequest = PageRequest.of(page, size, sort);
         Page<Destination> destinations = destinationRepository.search(filterBuilder.build(), pageRequest,
-                Set.of("categories"));
-        return destinationRepository.castDTO(destinations, DestinationDetail::from);
+                List.of("categories"));
+        return destinationRepository.castDTO(destinations, destinationMapper::toDestinationDetail);
     }
 
     @Override
@@ -48,20 +51,12 @@ public class DestinationServiceImpl implements DestinationService {
         var destination = destinationRepository.findById(destinationId)
                 .orElseThrow(
                         () -> new NotFoundException("Destionation not Found with id: " + destinationId.toString()));
-        return DestinationDetail.from(destination);
+        return destinationMapper.toDestinationDetail(destination);
     }
 
     @Override
     public DestinationDetail createDestination(DestinationCreate request) {
-        Destination destination = Destination.builder()
-                .name(request.getName())
-                .city(request.getCity())
-                .country(request.getCountry())
-                .rating(request.getRating())
-                .latitude(request.getLatitude())
-                .longtitude(request.getLongitude())
-                .thumbnailUrl(request.getThumbnailUrl())
-                .build();
+        Destination destination = destinationMapper.toDestination(request);
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
 
@@ -71,7 +66,7 @@ public class DestinationServiceImpl implements DestinationService {
             destination.setCategories(Set.copyOf(categories));
         }
         destinationRepository.save(destination);
-        return DestinationDetail.from(destination);
+        return destinationMapper.toDestinationDetail(destination);
     }
 
     @Override
@@ -87,15 +82,7 @@ public class DestinationServiceImpl implements DestinationService {
         var destination = destinationRepository.findById(destinationId)
                 .orElseThrow(
                         () -> new NotFoundException("Destionation not Found with id: " + destinationId.toString()));
-        destination.setName(request.getName() != null ? request.getName() : destination.getName());
-        destination.setCity(request.getCity() != null ? request.getCity() : destination.getCity());
-        destination.setCountry(request.getCountry() != null ? request.getCountry() : destination.getCountry());
-        destination.setRating(request.getRating() != null ? request.getRating() : destination.getRating());
-        destination.setLatitude(request.getLatitude() != null ? request.getLatitude() : destination.getLatitude());
-        destination
-                .setLongtitude(request.getLongitude() != null ? request.getLongitude() : destination.getLongtitude());
-        destination.setThumbnailUrl(
-                request.getThumbnailUrl() != null ? request.getThumbnailUrl() : destination.getThumbnailUrl());
+        destinationMapper.updateDestination(request, destination);
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
 
@@ -105,7 +92,7 @@ public class DestinationServiceImpl implements DestinationService {
             destination.setCategories(Set.copyOf(categories));
         }
         destinationRepository.save(destination);
-        return DestinationDetail.from(destination);
+        return destinationMapper.toDestinationDetail(destination);
     }
 
 }

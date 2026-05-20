@@ -41,6 +41,7 @@ public class RequestTrip {
         private String name;
         private OffsetDateTime startDate;
         private OffsetDateTime endDate;
+        @Builder.Default
         private List<UUID> destinationIds = Collections.emptyList();
     }
 

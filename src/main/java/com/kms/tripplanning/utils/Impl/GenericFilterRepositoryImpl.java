@@ -96,7 +96,7 @@ public class GenericFilterRepositoryImpl<T> implements GenericFilterRepository<T
     JPAQuery<UUID> idQuery = queryFactory.select(root.get("id", UUID.class)).from(root);
     FilterContext filterCtx = buildFilters(root, idQuery, filters, allowedFilterFields);
 
-    idQuery.where(filterCtx.predicate()).distinct();
+    idQuery.where(filterCtx.predicate()).groupBy(root.get("id", UUID.class)); // Needed if filters contain collection joins
     applySorting(idQuery, root, pageable, filterCtx);
 
     List<UUID> ids = idQuery

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import com.kms.tripplanning.dto.destination.DestinationMapper;
 import com.kms.tripplanning.dto.destination.RequestDestination.DestinationCreate;
 import com.kms.tripplanning.dto.destination.RequestDestination.DestinationUpdate;
 import com.kms.tripplanning.dto.destination.ResponseDestination.DestinationDetail;
@@ -38,6 +41,9 @@ class DestinationServiceImplTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private DestinationMapper destinationMapper;
 
     @InjectMocks
     private DestinationServiceImpl destinationService;
@@ -59,10 +65,39 @@ class DestinationServiceImplTest {
                 .country("Vietnam")
                 .rating(4.5f)
                 .latitude(10.35)
-                .longtitude(107.08)
+                .longitude(107.08)
                 .thumbnailUrl("https://example.com/img.jpg")
                 .categories(Set.of(sampleCategory))
                 .build();
+
+        lenient().when(destinationMapper.toDestination(any())).thenAnswer(inv -> {
+            DestinationCreate req = inv.getArgument(0);
+            return Destination.builder()
+                    .name(req.getName())
+                    .city(req.getCity())
+                    .country(req.getCountry())
+                    .latitude(req.getLatitude() != null ? req.getLatitude() : 0.0)
+                    .longitude(req.getLongitude() != null ? req.getLongitude() : 0.0)
+                    .rating(req.getRating())
+                    .thumbnailUrl(req.getThumbnailUrl())
+                    .build();
+        });
+        lenient().when(destinationMapper.toDestinationDetail(any())).thenAnswer(inv -> {
+            Destination d = inv.getArgument(0);
+            return DestinationDetail.from(d);
+        });
+        lenient().doAnswer(inv -> {
+            DestinationUpdate req = inv.getArgument(0);
+            Destination d = inv.getArgument(1);
+            if (req.getName() != null) d.setName(req.getName());
+            if (req.getCity() != null) d.setCity(req.getCity());
+            if (req.getCountry() != null) d.setCountry(req.getCountry());
+            if (req.getLatitude() != null) d.setLatitude(req.getLatitude());
+            if (req.getLongitude() != null) d.setLongitude(req.getLongitude());
+            if (req.getThumbnailUrl() != null) d.setThumbnailUrl(req.getThumbnailUrl());
+            if (req.getRating() != null) d.setRating(req.getRating());
+            return null;
+        }).when(destinationMapper).updateDestination(any(), any());
     }
 
     // ========== listDestination ==========
@@ -161,7 +196,8 @@ class DestinationServiceImplTest {
         when(destinationRepository.save(any(Destination.class))).thenAnswer(inv -> {
             Destination d = inv.getArgument(0);
             d.setId(UUID.randomUUID());
-            if (d.getCategories() == null) d.setCategories(Set.of());
+            if (d.getCategories() == null)
+                d.setCategories(Set.of());
             return d;
         });
 
@@ -231,7 +267,8 @@ class DestinationServiceImplTest {
         when(destinationRepository.save(captor.capture())).thenAnswer(inv -> {
             Destination d = inv.getArgument(0);
             d.setId(UUID.randomUUID());
-            if (d.getCategories() == null) d.setCategories(Set.of());
+            if (d.getCategories() == null)
+                d.setCategories(Set.of());
             return d;
         });
 
@@ -242,7 +279,7 @@ class DestinationServiceImplTest {
         assertThat(saved.getCity()).isEqualTo("Kien Giang");
         assertThat(saved.getCountry()).isEqualTo("Vietnam");
         assertThat(saved.getLatitude()).isEqualTo(10.22);
-        assertThat(saved.getLongtitude()).isEqualTo(103.96);
+        assertThat(saved.getLongitude()).isEqualTo(103.96);
         assertThat(saved.getRating()).isEqualTo(4.8f);
         assertThat(saved.getThumbnailUrl()).isEqualTo("https://example.com/pq.jpg");
     }

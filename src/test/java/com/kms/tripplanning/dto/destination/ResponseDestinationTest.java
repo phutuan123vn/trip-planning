@@ -18,12 +18,12 @@ class ResponseDestinationTest {
     void from_shouldMapAllFields() {
         UUID destId = UUID.randomUUID();
         UUID catId = UUID.randomUUID();
-        
+
         Category category = Category.builder()
                 .id(catId)
                 .name("Beach")
                 .build();
-                
+
         Destination destination = Destination.builder()
                 .id(destId)
                 .name("Vung Tau")
@@ -31,7 +31,7 @@ class ResponseDestinationTest {
                 .country("Vietnam")
                 .rating(4.5f)
                 .latitude(10.35)
-                .longtitude(107.08)
+                .longitude(107.08)
                 .thumbnailUrl("https://img.com/vt.jpg")
                 .categories(Set.of(category))
                 .build();
@@ -44,9 +44,9 @@ class ResponseDestinationTest {
         assertThat(detail.getCountry()).isEqualTo("Vietnam");
         assertThat(detail.getRating()).isEqualTo(4.5f);
         assertThat(detail.getLatitude()).isEqualTo(10.35);
-        assertThat(detail.getLongtitude()).isEqualTo(107.08);
+        assertThat(detail.getLongitude()).isEqualTo(107.08);
         assertThat(detail.getThumbnailUrl()).isEqualTo("https://img.com/vt.jpg");
-        
+
         assertThat(detail.getCategories()).hasSize(1);
         assertThat(detail.getCategories().get(0).getId()).isEqualTo(catId.toString());
         assertThat(detail.getCategories().get(0).getName()).isEqualTo("Beach");

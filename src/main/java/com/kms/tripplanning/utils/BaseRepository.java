@@ -15,7 +15,7 @@ public interface BaseRepository<T, ID> extends JpaRepository<T, ID>, GenericFilt
 
   Page<T> search(Map<String, List<Object>> filters, Pageable pageable);
 
-  Page<T> search(Map<String, List<Object>> filters, Pageable pageable, Set<String> allowedFields);
+  Page<T> search(Map<String, List<Object>> filters, Pageable pageable, List<String> loadRelations);
 
-  Page<T> search(Map<String, List<Object>> filters, Set<String> allowedFields);
+  Page<T> search(Map<String, List<Object>> filters, List<String> loadRelations);
 }

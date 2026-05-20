@@ -19,7 +19,7 @@ CREATE TABLE destinations
     country       VARCHAR(255),
     rating        FLOAT            NOT NULL,
     latitude      DOUBLE PRECISION NOT NULL,
-    longtitude    DOUBLE PRECISION NOT NULL,
+    longitude    DOUBLE PRECISION NOT NULL,
     thumbnail_url VARCHAR(255),
     CONSTRAINT pk_destinations PRIMARY KEY (id)
 );

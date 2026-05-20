@@ -8,7 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.kms.tripplanning.dto.category.CategoryMapper;
 import com.kms.tripplanning.dto.category.RequestCategory.CategoryCreate;
+import com.kms.tripplanning.dto.category.RequestCategory.CategoryUpdate;
 import com.kms.tripplanning.dto.category.ResponseCategory.CategoryDetail;
 import com.kms.tripplanning.entity.Category;
 import com.kms.tripplanning.exception.types.NotFoundException;
@@ -24,6 +26,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    private final CategoryMapper categoryMapper;
+
     @Override
     public Page<CategoryDetail> listCategories(Map<String, List<String>> filters, String sortBy, String sortDirection,
             int page, int size) {
@@ -32,23 +36,21 @@ public class CategoryServiceImpl implements CategoryService {
         var sort = FilterBuilderHelper.buildSort(sortBy, sortDirection);
         PageRequest pageRequest = PageRequest.of(page, size, sort);
         var categories = categoryRepository.search(filterBuilder.build(), pageRequest);
-        return categoryRepository.castDTO(categories, CategoryDetail::from);
+        return categoryRepository.castDTO(categories, categoryMapper::toCategoryDetail);
     }
 
     @Override
     public CategoryDetail getCategoryById(UUID categoryId) {
         var category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
-        return CategoryDetail.from(category);
+        return categoryMapper.toCategoryDetail(category);
     }
 
     @Override
     public CategoryDetail createCategory(CategoryCreate request) {
-        var category = Category.builder()
-                .name(request.getName())
-                .build();
+        var category = categoryMapper.toCategory(request);
         categoryRepository.save(category);
-        return CategoryDetail.from(category);
+        return categoryMapper.toCategoryDetail(category);
     }
 
     @Override
@@ -59,11 +61,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDetail updateCategory(UUID categoryId, CategoryCreate request) {
+    public CategoryDetail updateCategory(UUID categoryId, CategoryUpdate request) {
         var category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
-        category.setName(request.getName());
+        categoryMapper.updateCategory(request, category);
         categoryRepository.save(category);
-        return CategoryDetail.from(category);
+        return categoryMapper.toCategoryDetail(category);
     }
 }

@@ -42,7 +42,7 @@ public class Destination {
 
     private double latitude;
 
-    private double longtitude;
+    private double longitude;
 
 
     @Column(name = "thumbnail_url")

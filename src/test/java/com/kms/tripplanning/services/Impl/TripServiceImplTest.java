@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +36,7 @@ import com.kms.tripplanning.entity.Destination;
 import com.kms.tripplanning.entity.Trip;
 import com.kms.tripplanning.entity.User;
 import com.kms.tripplanning.exception.types.NotFoundException;
+import com.kms.tripplanning.dto.trip.TripMapper;
 import com.kms.tripplanning.repository.DestinationRepository;
 import com.kms.tripplanning.repository.TripRepository;
 import com.kms.tripplanning.utils.SecurityUtils;
@@ -46,6 +49,9 @@ class TripServiceImplTest {
 
     @Mock
     private DestinationRepository destinationRepository;
+
+    @Mock
+    private TripMapper tripMapper;
 
     @InjectMocks
     private TripServiceImpl tripService;
@@ -71,7 +77,7 @@ class TripServiceImplTest {
                 .country("Vietnam")
                 .rating(4.5f)
                 .latitude(10.35)
-                .longtitude(107.08)
+                .longitude(107.08)
                 .categories(Set.of(cat))
                 .build();
 
@@ -82,6 +88,27 @@ class TripServiceImplTest {
                 .endDate(OffsetDateTime.now().plusDays(1))
                 .destinations(Set.of(sampleDestination))
                 .build();
+
+        lenient().when(tripMapper.toTrip(any())).thenAnswer(inv -> {
+            TripCreate req = inv.getArgument(0);
+            return Trip.builder()
+                    .name(req.getName())
+                    .startDate(req.getStartDate())
+                    .endDate(req.getEndDate())
+                    .build();
+        });
+        lenient().when(tripMapper.toTripDetail(any())).thenAnswer(inv -> {
+            Trip t = inv.getArgument(0);
+            return TripDetail.from(t);
+        });
+        lenient().doAnswer(inv -> {
+            TripUpdate req = inv.getArgument(0);
+            Trip t = inv.getArgument(1);
+            if (req.getName() != null) t.setName(req.getName());
+            if (req.getStartDate() != null) t.setStartDate(req.getStartDate());
+            if (req.getEndDate() != null) t.setEndDate(req.getEndDate());
+            return null;
+        }).when(tripMapper).updateTrip(any(), any());
     }
 
     @AfterEach
@@ -118,7 +145,8 @@ class TripServiceImplTest {
         when(tripRepository.save(any(Trip.class))).thenAnswer(inv -> {
             Trip t = inv.getArgument(0);
             t.setId(UUID.randomUUID());
-            if (t.getDestinations() == null) t.setDestinations(Set.of());
+            if (t.getDestinations() == null)
+                t.setDestinations(Set.of());
             return t;
         });
 
@@ -181,7 +209,8 @@ class TripServiceImplTest {
         when(tripRepository.save(captor.capture())).thenAnswer(inv -> {
             Trip t = inv.getArgument(0);
             t.setId(UUID.randomUUID());
-            if (t.getDestinations() == null) t.setDestinations(Set.of());
+            if (t.getDestinations() == null)
+                t.setDestinations(Set.of());
             return t;
         });
 
