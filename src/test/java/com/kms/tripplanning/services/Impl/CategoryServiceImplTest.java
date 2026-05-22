@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,9 +14,11 @@ import com.kms.tripplanning.dto.category.CategoryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,8 +37,8 @@ class CategoryServiceImplTest {
     @Mock
     private CategoryRepository categoryRepository;
 
-    @Mock
-    private CategoryMapper categoryMapper;
+    @Spy
+    private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -54,20 +54,6 @@ class CategoryServiceImplTest {
                 .name("Beach")
                 .build();
 
-        lenient().when(categoryMapper.toCategory(any())).thenAnswer(inv -> {
-            CategoryCreate req = inv.getArgument(0);
-            return Category.builder().name(req.getName()).build();
-        });
-        lenient().when(categoryMapper.toCategoryDetail(any())).thenAnswer(inv -> {
-            Category c = inv.getArgument(0);
-            return CategoryDetail.from(c);
-        });
-        lenient().doAnswer(inv -> {
-            CategoryUpdate req = inv.getArgument(0);
-            Category c = inv.getArgument(1);
-            c.setName(req.getName());
-            return null;
-        }).when(categoryMapper).updateCategory(any(), any());
     }
 
     // ========== listCategories ==========
@@ -75,7 +61,7 @@ class CategoryServiceImplTest {
     @Test
     void listCategories_shouldReturnPageOfCategories() {
         Page<Category> categoryPage = new PageImpl<>(List.of(sampleCategory));
-        Page<CategoryDetail> detailPage = new PageImpl<>(List.of(CategoryDetail.from(sampleCategory)));
+        Page<CategoryDetail> detailPage = new PageImpl<>(List.of(categoryMapper.toCategoryDetail(sampleCategory)));
 
         when(categoryRepository.search(any(), any(Pageable.class))).thenReturn(categoryPage);
         when(categoryRepository.castDTO(eq(categoryPage), any(Function.class))).thenReturn(detailPage);

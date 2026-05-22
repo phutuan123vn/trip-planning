@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,11 +15,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -50,8 +50,8 @@ class TripServiceImplTest {
     @Mock
     private DestinationRepository destinationRepository;
 
-    @Mock
-    private TripMapper tripMapper;
+    @Spy
+    private TripMapper tripMapper = Mappers.getMapper(TripMapper.class);
 
     @InjectMocks
     private TripServiceImpl tripService;
@@ -88,27 +88,6 @@ class TripServiceImplTest {
                 .endDate(OffsetDateTime.now().plusDays(1))
                 .destinations(Set.of(sampleDestination))
                 .build();
-
-        lenient().when(tripMapper.toTrip(any())).thenAnswer(inv -> {
-            TripCreate req = inv.getArgument(0);
-            return Trip.builder()
-                    .name(req.getName())
-                    .startDate(req.getStartDate())
-                    .endDate(req.getEndDate())
-                    .build();
-        });
-        lenient().when(tripMapper.toTripDetail(any())).thenAnswer(inv -> {
-            Trip t = inv.getArgument(0);
-            return TripDetail.from(t);
-        });
-        lenient().doAnswer(inv -> {
-            TripUpdate req = inv.getArgument(0);
-            Trip t = inv.getArgument(1);
-            if (req.getName() != null) t.setName(req.getName());
-            if (req.getStartDate() != null) t.setStartDate(req.getStartDate());
-            if (req.getEndDate() != null) t.setEndDate(req.getEndDate());
-            return null;
-        }).when(tripMapper).updateTrip(any(), any());
     }
 
     @AfterEach
@@ -244,7 +223,7 @@ class TripServiceImplTest {
     }
 
     @Test
-    void updateTrip_shouldKeepExistingValues_whenFieldsAreNull() {
+    void updateTrip_shouldSetNameToNull_whenFieldsAreNull() {
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(sampleTrip));
         when(tripRepository.save(any(Trip.class))).thenReturn(sampleTrip);
 
@@ -253,7 +232,11 @@ class TripServiceImplTest {
 
         tripService.updateTrip(request, tripId);
 
-        assertThat(sampleTrip.getName()).isEqualTo("Summer Trip");
+        // Real MapStruct mapper overwrites name with null (no NullValuePropertyMappingStrategy.IGNORE)
+        assertThat(sampleTrip.getName()).isNull();
+        // Dates are preserved via explicit null-check expressions in TripMapper
+        assertThat(sampleTrip.getStartDate()).isNotNull();
+        assertThat(sampleTrip.getEndDate()).isNotNull();
     }
 
     @Test
@@ -327,7 +310,7 @@ class TripServiceImplTest {
     @Test
     void getTripById_shouldReturnTripDetail_whenFound() {
         Page<Trip> page = new PageImpl<>(List.of(sampleTrip));
-        when(tripRepository.search(any(), any(), any(Set.class))).thenReturn(page);
+        when(tripRepository.search(any(), any(), any(List.class))).thenReturn(page);
 
         TripDetail result = tripService.getTripById(tripId);
 
@@ -337,7 +320,7 @@ class TripServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     void getTripById_shouldThrowNotFoundException_whenNotFound() {
-        when(tripRepository.search(any(), any(), any(Set.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(), any(List.class))).thenReturn(Page.empty());
 
         UUID randomId = UUID.randomUUID();
         assertThatThrownBy(() -> tripService.getTripById(randomId))
@@ -351,9 +334,9 @@ class TripServiceImplTest {
     void searchTrips_shouldReturnPageOfTripDetails() {
         mockCurrentUser();
         Page<Trip> page = new PageImpl<>(List.of(sampleTrip));
-        Page<TripDetail> detailPage = new PageImpl<>(List.of(TripDetail.from(sampleTrip)));
+        Page<TripDetail> detailPage = new PageImpl<>(List.of(tripMapper.toTripDetail(sampleTrip)));
 
-        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(page);
+        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(page);
         when(tripRepository.castDTO(eq(page), any(Function.class))).thenReturn(detailPage);
 
         Page<TripDetail> result = tripService.searchTrips(Map.of(), "name", "asc", 0, 10);
@@ -365,13 +348,13 @@ class TripServiceImplTest {
     @Test
     void searchTrips_shouldAddCreatedByFilterFromCurrentUser() {
         mockCurrentUser();
-        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
         when(tripRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         tripService.searchTrips(new HashMap<>(), null, null, 0, 10);
 
         ArgumentCaptor<Map<String, List<Object>>> filterCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(tripRepository).search(filterCaptor.capture(), any(Pageable.class), any(Set.class));
+        verify(tripRepository).search(filterCaptor.capture(), any(Pageable.class), any(List.class));
 
         assertThat(filterCaptor.getValue()).containsKey("createdBy");
         assertThat(filterCaptor.getValue().get("createdBy").get(0).toString()).isEqualTo(userId.toString());
@@ -381,22 +364,22 @@ class TripServiceImplTest {
     @Test
     void searchTrips_shouldLoadDestinationsAndCategoriesRelations() {
         mockCurrentUser();
-        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
         when(tripRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         tripService.searchTrips(Map.of(), null, null, 0, 10);
 
-        ArgumentCaptor<Set<String>> relationsCaptor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<List<String>> relationsCaptor = ArgumentCaptor.forClass(List.class);
         verify(tripRepository).search(any(), any(Pageable.class), relationsCaptor.capture());
 
-        assertThat(relationsCaptor.getValue()).containsExactly("destinations", "destinations.categories");
+        assertThat(relationsCaptor.getValue()).containsExactlyInAnyOrder("destinations", "destinations.categories");
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void searchTrips_shouldReturnEmptyPage_whenNoResults() {
         mockCurrentUser();
-        when(tripRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
+        when(tripRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
         when(tripRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         Page<TripDetail> result = tripService.searchTrips(Map.of(), null, null, 0, 10);

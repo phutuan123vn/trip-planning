@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,9 +13,11 @@ import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -42,8 +42,8 @@ class DestinationServiceImplTest {
     @Mock
     private CategoryRepository categoryRepository;
 
-    @Mock
-    private DestinationMapper destinationMapper;
+    @Spy
+    private DestinationMapper destinationMapper = Mappers.getMapper(DestinationMapper.class);
 
     @InjectMocks
     private DestinationServiceImpl destinationService;
@@ -69,35 +69,6 @@ class DestinationServiceImplTest {
                 .thumbnailUrl("https://example.com/img.jpg")
                 .categories(Set.of(sampleCategory))
                 .build();
-
-        lenient().when(destinationMapper.toDestination(any())).thenAnswer(inv -> {
-            DestinationCreate req = inv.getArgument(0);
-            return Destination.builder()
-                    .name(req.getName())
-                    .city(req.getCity())
-                    .country(req.getCountry())
-                    .latitude(req.getLatitude() != null ? req.getLatitude() : 0.0)
-                    .longitude(req.getLongitude() != null ? req.getLongitude() : 0.0)
-                    .rating(req.getRating())
-                    .thumbnailUrl(req.getThumbnailUrl())
-                    .build();
-        });
-        lenient().when(destinationMapper.toDestinationDetail(any())).thenAnswer(inv -> {
-            Destination d = inv.getArgument(0);
-            return DestinationDetail.from(d);
-        });
-        lenient().doAnswer(inv -> {
-            DestinationUpdate req = inv.getArgument(0);
-            Destination d = inv.getArgument(1);
-            if (req.getName() != null) d.setName(req.getName());
-            if (req.getCity() != null) d.setCity(req.getCity());
-            if (req.getCountry() != null) d.setCountry(req.getCountry());
-            if (req.getLatitude() != null) d.setLatitude(req.getLatitude());
-            if (req.getLongitude() != null) d.setLongitude(req.getLongitude());
-            if (req.getThumbnailUrl() != null) d.setThumbnailUrl(req.getThumbnailUrl());
-            if (req.getRating() != null) d.setRating(req.getRating());
-            return null;
-        }).when(destinationMapper).updateDestination(any(), any());
     }
 
     // ========== listDestination ==========
@@ -105,9 +76,9 @@ class DestinationServiceImplTest {
     @Test
     void listDestination_shouldReturnPageOfDestinationDetails() {
         Page<Destination> page = new PageImpl<>(List.of(sampleDestination));
-        Page<DestinationDetail> detailPage = new PageImpl<>(List.of(DestinationDetail.from(sampleDestination)));
+        Page<DestinationDetail> detailPage = new PageImpl<>(List.of(destinationMapper.toDestinationDetail(sampleDestination)));
 
-        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(page);
+        when(destinationRepository.search(any(), any(Pageable.class), eq(List.of("categories")))).thenReturn(page);
         when(destinationRepository.castDTO(eq(page), any(Function.class))).thenReturn(detailPage);
 
         Map<String, List<String>> filters = Map.of("city", List.of("Vung Tau"));
@@ -119,7 +90,7 @@ class DestinationServiceImplTest {
 
     @Test
     void listDestination_shouldReturnEmptyPage_whenNoResults() {
-        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
+        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
         when(destinationRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         Page<DestinationDetail> result = destinationService.listDestination(Map.of(), null, null, 0, 10);
@@ -130,12 +101,12 @@ class DestinationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     void listDestination_shouldPassCategoriesAsLoadRelation() {
-        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
+        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
         when(destinationRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         destinationService.listDestination(Map.of(), null, null, 0, 10);
 
-        ArgumentCaptor<Set<String>> relationsCaptor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<List<String>> relationsCaptor = ArgumentCaptor.forClass(List.class);
         verify(destinationRepository).search(any(), any(Pageable.class), relationsCaptor.capture());
 
         assertThat(relationsCaptor.getValue()).containsExactly("categories");
@@ -143,13 +114,13 @@ class DestinationServiceImplTest {
 
     @Test
     void listDestination_shouldApplySortCorrectly() {
-        when(destinationRepository.search(any(), any(Pageable.class), any(Set.class))).thenReturn(Page.empty());
+        when(destinationRepository.search(any(), any(Pageable.class), any(List.class))).thenReturn(Page.empty());
         when(destinationRepository.castDTO(any(), any(Function.class))).thenReturn(Page.empty());
 
         destinationService.listDestination(Map.of(), "rating", "desc", 0, 10);
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(destinationRepository).search(any(), pageableCaptor.capture(), any(Set.class));
+        verify(destinationRepository).search(any(), pageableCaptor.capture(), any(List.class));
 
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("rating")).isNotNull();
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("rating").getDirection())
@@ -328,7 +299,7 @@ class DestinationServiceImplTest {
     }
 
     @Test
-    void updateDestination_shouldKeepExistingValues_whenFieldsAreNull() {
+    void updateDestination_shouldSetFieldsToNull_whenFieldsAreNull() {
         when(destinationRepository.findById(destinationId)).thenReturn(Optional.of(sampleDestination));
         when(destinationRepository.save(any(Destination.class))).thenReturn(sampleDestination);
 
@@ -338,9 +309,9 @@ class DestinationServiceImplTest {
 
         destinationService.updateDestination(destinationId, request);
 
-        // Should keep original values
-        assertThat(sampleDestination.getName()).isEqualTo("Vung Tau");
-        assertThat(sampleDestination.getCity()).isEqualTo("Vung Tau");
+        // Real MapStruct mapper overwrites fields with null (no NullValuePropertyMappingStrategy.IGNORE)
+        assertThat(sampleDestination.getName()).isNull();
+        assertThat(sampleDestination.getCity()).isNull();
     }
 
     @Test

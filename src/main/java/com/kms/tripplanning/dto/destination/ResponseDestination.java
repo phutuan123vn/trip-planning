@@ -25,21 +25,6 @@ public class ResponseDestination {
         private double longitude;
         private String thumbnailUrl;
 
-        public static DestinationDetail from(Destination destination) {
-            DestinationDetail detail = new DestinationDetail();
-            detail.id = destination.getId().toString();
-            detail.name = destination.getName();
-            detail.city = destination.getCity();
-            detail.country = destination.getCountry();
-            detail.rating = destination.getRating();
-            detail.categories = destination.getCategories().stream()
-                    .map(CategoryDetail::from)
-                    .toList();
-            detail.latitude = destination.getLatitude();
-            detail.longitude = destination.getLongitude();
-            detail.thumbnailUrl = destination.getThumbnailUrl();
-            return detail;
-        }
     }
 
     @Data

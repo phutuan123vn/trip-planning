@@ -2,11 +2,11 @@ package com.kms.tripplanning.dto.destination;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import com.kms.tripplanning.dto.destination.ResponseDestination.DestinationDetail;
 import com.kms.tripplanning.entity.Category;
@@ -14,8 +14,10 @@ import com.kms.tripplanning.entity.Destination;
 
 class ResponseDestinationTest {
 
+    private final DestinationMapper destinationMapper = Mappers.getMapper(DestinationMapper.class);
+
     @Test
-    void from_shouldMapAllFields() {
+    void toDestinationDetail_shouldMapAllFields() {
         UUID destId = UUID.randomUUID();
         UUID catId = UUID.randomUUID();
 
@@ -36,7 +38,7 @@ class ResponseDestinationTest {
                 .categories(Set.of(category))
                 .build();
 
-        DestinationDetail detail = DestinationDetail.from(destination);
+        DestinationDetail detail = destinationMapper.toDestinationDetail(destination);
 
         assertThat(detail.getId()).isEqualTo(destId.toString());
         assertThat(detail.getName()).isEqualTo("Vung Tau");

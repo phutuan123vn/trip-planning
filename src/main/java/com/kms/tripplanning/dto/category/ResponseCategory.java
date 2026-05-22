@@ -14,12 +14,6 @@ public class ResponseCategory {
     public static class CategoryDetail {
         private String id;
         private String name;
-
-        public static CategoryDetail from(Category category) {
-            CategoryDetail detail = new CategoryDetail();
-            detail.id = category.getId().toString();
-            detail.name = category.getName();
-            return detail;
-        }
+        
     }
 }

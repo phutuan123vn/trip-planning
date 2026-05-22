@@ -2,10 +2,7 @@ package com.kms.tripplanning.services.Impl;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.time.ZoneOffset;
-import java.util.LinkedHashSet;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,7 +13,6 @@ import com.kms.tripplanning.dto.trip.TripMapper;
 import com.kms.tripplanning.dto.trip.RequestTrip.TripCreate;
 import com.kms.tripplanning.dto.trip.RequestTrip.TripUpdate;
 import com.kms.tripplanning.dto.trip.ResponseTrip.TripDetail;
-import com.kms.tripplanning.entity.Trip;
 import com.kms.tripplanning.exception.types.NotFoundException;
 import com.kms.tripplanning.repository.DestinationRepository;
 import com.kms.tripplanning.repository.TripRepository;
@@ -46,7 +42,7 @@ public class TripServiceImpl implements TripService {
             trip.setDestinations(new java.util.HashSet<>(destinations));
         }
         tripRepository.save(trip);
-        return TripDetail.from(trip);
+        return tripMapper.toTripDetail(trip);
     }
 
     @Override
@@ -66,8 +62,7 @@ public class TripServiceImpl implements TripService {
 
         tripRepository.save(trip);
 
-        return TripDetail.from(trip);
-
+        return tripMapper.toTripDetail(trip);
     }
 
     @Override

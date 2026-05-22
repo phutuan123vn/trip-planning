@@ -21,17 +21,6 @@ public class ResponseTrip {
         private String startDate;
         private String endDate;
         private List<DestinationDetail> destinations = Collections.emptyList();
-
-        public static TripDetail from(Trip trip) {
-            TripDetail detail = new TripDetail();
-            detail.id = trip.getId().toString();
-            detail.name = trip.getName();
-            detail.startDate = trip.getStartDate().toString();
-            detail.endDate = trip.getEndDate().toString();
-            detail.destinations = trip.getDestinations().stream()
-                    .map(DestinationDetail::from)
-                    .toList();
-            return detail;
-        }
+        
     }
 }
